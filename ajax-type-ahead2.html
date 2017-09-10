@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style1.css">
+</head>
+
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+
+    </ul>
+  </form>
+  <script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+
+    const cities = [];
+    const searches = document.querySelector('.search');
+    const suggestions = document.querySelector('.suggestions');
+
+
+    //triggers at runtime
+    fetch(endpoint).then(place => place.json()).then(data => cities.push(...data));
+    //triggers when key is pushed then released
+    searches.addEventListener('keyup', getInput);
+
+
+
+    //Fuctions
+
+
+    function sortPlaces(toBeSorted) {
+      return toBeSorted.sort((a, b) => a.state > b.state ? 1 : -1);
+    }
+
+    function numberWithCommas(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+
+    function getInput() {
+      const sortedList = sortPlaces(cities);
+
+      const regex = new RegExp(this.value, 'gi');
+      const searched = sortedList.filter(place => {
+        return place.state.match(regex) || place.city.match(regex);
+      });
+
+      const html = searched.map(place => {
+        const regex = new RegExp(this.value, 'gi');
+        const typedState = place.state.replace(regex, `<span class = "highlight">${this.value}</span>`);
+        const typedCity = place.city.replace(regex, `<span class = "highlight">${this.value}</span>`);
+        return `<li>
+                        <div>
+                          <p>${typedState}</p>
+                          <p><em>${typedCity}</em></p>
+                        </div>
+                        <p>${numberWithCommas(place.population)}</p>
+                      </li>`
+      }).join('');
+
+      suggestions.innerHTML = html;
+
+    }
+
+  </script>
+</body>
+
+</html>
